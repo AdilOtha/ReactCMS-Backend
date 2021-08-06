@@ -6,7 +6,7 @@ const Menu = require('../models/menu');
 router.get('/', async (req, res, next) => {
     try {
         const result = await Menu.find()
-            .select("_id name")
+            .select("_id name datePosted")
             .exec();
         return res.status(200).json(result);
     } catch (err) {
@@ -38,7 +38,10 @@ router.post('/insert', async (req, res, next) => {
     const menu = new Menu({
         _id: new mongoose.Types.ObjectId,
         name: req.body.name,
+        datePosted: new Date(),
     });
+
+    console.log(menu);
 
     try {
         const result = await menu.save();

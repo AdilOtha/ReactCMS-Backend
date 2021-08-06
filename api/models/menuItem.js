@@ -5,6 +5,8 @@ const menuItemSchema = new mongoose.Schema({
     name: {type: String, required: true},
     typeArticle: {type: mongoose.Schema.Types.ObjectId, ref: 'Article' },
     typeCategory: {type: mongoose.Schema.Types.ObjectId, ref: 'Category'},
+    menuIds: [{type: mongoose.Schema.Types.ObjectId, ref: 'Menu'}],
+    datePosted: {type: Date},
 });
 
 module.exports = mongoose.model('MenuItem', menuItemSchema);

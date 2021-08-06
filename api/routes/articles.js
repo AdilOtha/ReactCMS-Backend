@@ -5,7 +5,7 @@ const Article = require('../models/article');
 
 router.get('/', (req, res, next) => {
     Article.find()
-        .select("title datePosted published userId")
+        .populate("categoryIds")
         .exec()
         .then(docs => {
             const response = {
@@ -16,6 +16,7 @@ router.get('/', (req, res, next) => {
                         _id: doc._id,
                         datePosted: doc.datePosted,
                         published: doc.published,
+                        categoryIds: doc.categoryIds
                     }
                 })
             }
@@ -31,6 +32,7 @@ router.get('/:articleId', (req, res, next) => {
     const id = req.params.articleId;
 
     Article.findById(id)
+        .populate('categoryIds')
         .exec()
         .then(doc => {
             console.log(doc);
@@ -53,6 +55,7 @@ router.post('/insert', (req, res, next) => {
         body: req.body.body,
         datePosted: new Date(),
         published: req.body.published,
+        categoryIds: req.body.categoryIds,
         userId: req.body.userId
     });
 
@@ -69,7 +72,7 @@ router.post('/insert', (req, res, next) => {
 });
 
 router.post('/update/:articleId', async (req, res, next) => {
-    const id = req.params.articleId;    
+    const id = req.params.articleId;
 
     try {
         const result = await Article.updateMany({ _id: id }, { $set: req.body }).exec()
@@ -88,7 +91,7 @@ router.post('/delete', async (req, res, next) => {
 
     try {
         const result = await Article.deleteMany({
-            _id: {$in: articleIds}
+            _id: { $in: articleIds }
         }).exec();
         res.status(200).json(result);
     } catch (err) {

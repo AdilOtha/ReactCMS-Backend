@@ -22,11 +22,13 @@ const articleRoutes = require('./api/routes/articles');
 const userRoutes = require('./api/routes/users');
 const categoryRoutes = require('./api/routes/categories');
 const menuRoutes = require('./api/routes/menus');
+const menuItemRoutes = require('./api/routes/menuItems');
 
 app.use('/api/articles',articleRoutes);
 app.use('/api/users',userRoutes);
 app.use('/api/categories',categoryRoutes);
 app.use('/api/menus',menuRoutes);
+app.use('/api/menu-items',menuItemRoutes);
 
 app.use((req,res,next)=>{
     const error = new Error('Not Found');

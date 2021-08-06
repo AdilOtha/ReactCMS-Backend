@@ -6,7 +6,7 @@ const Category = require('../models/category');
 router.get('/', async (req, res, next) => {
     try {
         const result = await Category.find()
-            .select("_id name")
+            .select("_id name datePosted")
             .exec();
         return res.status(200).json(result);
     } catch (err) {
@@ -38,6 +38,7 @@ router.post('/insert', async (req, res, next) => {
     const category = new Category({
         _id: new mongoose.Types.ObjectId,
         name: req.body.name,
+        datePosted: new Date(),
     });
 
     try {
