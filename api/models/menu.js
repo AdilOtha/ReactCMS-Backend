@@ -5,6 +5,7 @@ const menuSchema = new mongoose.Schema({
     name: {type: String, required: true},
     datePosted: {type: Date},
     position: String,
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 });
 
 module.exports = mongoose.model('Menu', menuSchema);

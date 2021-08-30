@@ -5,8 +5,10 @@ const menuItemSchema = new mongoose.Schema({
     name: {type: String, required: true},
     typeArticle: {type: mongoose.Schema.Types.ObjectId, ref: 'Article' },
     typeCategory: {type: mongoose.Schema.Types.ObjectId, ref: 'Category'},
+    typeDropDown: [{type: mongoose.Schema.Types.ObjectId, ref: 'MenuItem'}],
     menuIds: [{type: mongoose.Schema.Types.ObjectId, ref: 'Menu'}],
     datePosted: {type: Date},
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User'},
 });
 
 module.exports = mongoose.model('MenuItem', menuItemSchema);

@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Category = require('../models/category');
+const Category = require('../../models/category');
+const { validJWTNeeded } = require("../../helpers/auth.helpers");
 
-router.get('/', async (req, res, next) => {
+router.get('/', validJWTNeeded, async (req, res, next) => {
     try {
         const result = await Category.find()
             .select("_id name datePosted")
@@ -15,7 +16,7 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.get('/:categoryId', (req, res, next) => {
+router.get('/:categoryId', validJWTNeeded, (req, res, next) => {
     const id = req.params.categoryId;
 
     Category.findById(id)
@@ -34,7 +35,7 @@ router.get('/:categoryId', (req, res, next) => {
         });
 });
 
-router.post('/insert', async (req, res, next) => {
+router.post('/insert', validJWTNeeded, async (req, res, next) => {
     const category = new Category({
         _id: new mongoose.Types.ObjectId,
         name: req.body.name,
@@ -50,7 +51,7 @@ router.post('/insert', async (req, res, next) => {
     }
 });
 
-router.post('/update/:categoryId', async (req, res, next) => {
+router.post('/update/:categoryId', validJWTNeeded, async (req, res, next) => {
     const id = req.params.categoryId;    
 
     try {
@@ -64,7 +65,7 @@ router.post('/update/:categoryId', async (req, res, next) => {
     }
 });
 
-router.post('/delete', async (req, res, next) => {
+router.post('/delete', validJWTNeeded, async (req, res, next) => {
 
     const categoryIds = req.body.categoryIds;
 

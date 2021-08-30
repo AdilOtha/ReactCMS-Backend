@@ -1,34 +1,47 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Article = require('../models/article');
+const Article = require('../../models/article');
+const { validJWTNeeded } = require("../../helpers/auth.helpers");
 
-router.get('/', (req, res, next) => {
-    Article.find()
+router.get('/', validJWTNeeded, (req, res, next) => {
+    const match = {};
+    const sort = {};
+
+    if (req.query.published) {
+        match.published = req.query.published;
+    }
+
+    if (req.query.sortBy) {
+        const parts = req.query.sortBy.split(':');
+        sort[parts[0]] = parts[1] === 'asc' ? 1 : -1;
+    }
+
+    Article.find(match,
+        null,
+        {
+            limit: parseInt(req.query.limit),
+            skip: parseInt(req.query.skip),
+            sort,
+        })
         .populate("categoryIds")
         .exec()
-        .then(docs => {
+        .then(async (docs) => {
+            const count = match === {} ? await Article.countDocuments().exec()
+                : await Article.countDocuments(match).exec();
             const response = {
-                count: docs.length,
-                articles: docs.map(doc => {
-                    return {
-                        title: doc.title,
-                        _id: doc._id,
-                        datePosted: doc.datePosted,
-                        published: doc.published,
-                        categoryIds: doc.categoryIds
-                    }
-                })
+                count,
+                articles: docs
             }
-            res.status(200).json(response);
+            return res.status(200).json(response);
         })
         .catch(err => {
             console.log(err);
-            res.status(500).json({ error: err });
+            return res.status(500).json(err);
         });
 });
 
-router.get('/:articleId', (req, res, next) => {
+router.get('/:articleId', validJWTNeeded, (req, res, next) => {
     const id = req.params.articleId;
 
     Article.findById(id)
@@ -48,7 +61,7 @@ router.get('/:articleId', (req, res, next) => {
         });
 });
 
-router.post('/insert', (req, res, next) => {
+router.post('/insert', validJWTNeeded, (req, res, next) => {
     const article = new Article({
         _id: new mongoose.Types.ObjectId,
         title: req.body.title,
@@ -71,11 +84,11 @@ router.post('/insert', (req, res, next) => {
         });
 });
 
-router.post('/update/:articleId', async (req, res, next) => {
+router.post('/update/:articleId', validJWTNeeded, async (req, res, next) => {
     const id = req.params.articleId;
 
     try {
-        const result = await Article.updateMany({ _id: id }, { $set: req.body }).exec()
+        const result = await Article.updateOne({ _id: id }, { $set: req.body }).exec()
         res.status(200).json(result);
     } catch (err) {
         console.log(err);
@@ -85,7 +98,7 @@ router.post('/update/:articleId', async (req, res, next) => {
     }
 });
 
-router.post('/delete', async (req, res, next) => {
+router.post('/delete', validJWTNeeded, async (req, res, next) => {
 
     const articleIds = req.body.articleIds;
 

@@ -1,14 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const MenuItem = require('../models/menuItem');
+const Menu = require('../../models/menu');
+const MenuItem = require('../../models/menuItem');
+const { validJWTNeeded } = require("../../helpers/auth.helpers");
 
-router.get('/', async (req, res, next) => {
+router.get('/', validJWTNeeded, async (req, res, next) => {
     try {
-        const result = await MenuItem.find()
-            .populate('menuIds')
-            .populate('typeArticle')
-            .populate('typeCategory')
+        const result = await Menu.find()
+            .select("_id name datePosted")
             .exec();
         return res.status(200).json(result);
     } catch (err) {
@@ -17,13 +17,26 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-router.get('/:menuItemId', (req, res, next) => {
-    const id = req.params.menuItemId;
+router.get('/main-menu/:mainMenuId', validJWTNeeded, async (req, res, next) => {
+    const id = req.params.mainMenuId;
 
-    MenuItem.findById(id)
-        .populate('menuIds')
-        .populate('typeArticle')
-        .populate('typeCategory')
+    try {
+        const result = await MenuItem.find({ menuIds: id })
+            .populate('typeArticle')
+            .populate('typeCategory')
+            .exec();
+        console.log(result);
+        return res.status(200).json(result);
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ error: err });
+    }
+});
+
+router.get('/:menuId', validJWTNeeded, (req, res, next) => {
+    const id = req.params.menuId;
+
+    Menu.findById(id)
         .exec()
         .then(doc => {
             console.log(doc);
@@ -39,29 +52,17 @@ router.get('/:menuItemId', (req, res, next) => {
         });
 });
 
-router.post('/insert', async (req, res, next) => {
-
-    let data = {
+router.post('/insert', validJWTNeeded, async (req, res, next) => {
+    const menu = new Menu({
         _id: new mongoose.Types.ObjectId,
         name: req.body.name,
-        menuIds: [],
         datePosted: new Date(),
-    };
+    });
 
-    data.menuIds.push(req.body.menuIds);
-
-    if (req.body.typeArticle) {
-        data.typeArticle = req.body.typeArticle;
-    }
-
-    if (req.body.typeCategory) {
-        data.typeCategory = req.body.typeCategory;
-    }
-
-    const menuItem = new MenuItem(data);
+    console.log(menu);
 
     try {
-        const result = await menuItem.save();
+        const result = await menu.save();
         return res.status(200).json(result);
     } catch (err) {
         console.log(err);
@@ -69,11 +70,11 @@ router.post('/insert', async (req, res, next) => {
     }
 });
 
-router.post('/update/:menuItemId', async (req, res, next) => {
-    const id = req.params.menuItemId;
+router.post('/update/:menuId', validJWTNeeded, async (req, res, next) => {
+    const id = req.params.menuId;
 
     try {
-        const result = await MenuItem.updateMany({ _id: id }, { $set: req.body }).exec()
+        const result = await Menu.updateMany({ _id: id }, { $set: req.body }).exec()
         res.status(200).json(result);
     } catch (err) {
         console.log(err);
@@ -83,18 +84,13 @@ router.post('/update/:menuItemId', async (req, res, next) => {
     }
 });
 
-router.post('/delete', async (req, res, next) => {
+router.post('/delete', validJWTNeeded, async (req, res, next) => {
 
     try {
-        if (!req.body.menuItemIds) {
-            throw new Error("Please provide appropriate parameters");
-        }
-
-        const result = await MenuItem.deleteMany({
-            _id: { $in: req.body.menuItemIds }
+        const result = await Menu.deleteMany({
+            _id: { $in: req.body.menuIds }
         }).exec();
-
-        return res.status(200).json(result);
+        res.status(200).json(result);
     } catch (err) {
         console.log(err);
         return res.status(500).json({
