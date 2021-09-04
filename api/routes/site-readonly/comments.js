@@ -8,7 +8,7 @@ router.get('/:articleId', validJWTNeededForSite, async (req, res) => {
     const articleId = req.params.articleId;
     if (articleId) {
         try {
-            const result = await Comment.find({ articleId },null,
+            const result = await Comment.find({ articleId }, null,
                 {
                     sort: {
                         datePosted: -1
@@ -17,6 +17,22 @@ router.get('/:articleId', validJWTNeededForSite, async (req, res) => {
                 .populate('userId')
                 .exec();
             return res.status(200).json(result);
+        } catch (err) {
+            console.log(err);
+            return res.status(500).json({ message: err });
+        }
+    } else {
+        return res.status(500).json({ message: "Please provide articleId" });
+    }
+});
+
+router.get('/noOfComments/:articleId', async (req, res) => {
+    const articleId = req.params.articleId;
+    if (articleId) {
+        try {
+            const result = await Comment.countDocuments({ articleId })
+                .exec();
+            return res.status(200).json({_id: articleId,count: result});
         } catch (err) {
             console.log(err);
             return res.status(500).json({ message: err });

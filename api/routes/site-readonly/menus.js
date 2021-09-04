@@ -23,6 +23,7 @@ router.get('/main-menu/:mainMenuId', validJWTNeededForSite, async (req, res, nex
         const result = await MenuItem.find({ menuIds: id })
             .populate('typeArticle')
             .populate('typeCategory')
+            .populate('typeDropDown')
             .exec();
         // console.log(result);
         return res.status(200).json(result);

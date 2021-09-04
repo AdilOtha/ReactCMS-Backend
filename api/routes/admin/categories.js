@@ -4,10 +4,13 @@ const mongoose = require('mongoose');
 const Category = require('../../models/category');
 const { validJWTNeeded } = require("../../helpers/auth.helpers");
 
-router.get('/', validJWTNeeded, async (req, res, next) => {
+router.get('/', validJWTNeeded, async (req, res) => {
+    const match = {};
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
     try {
-        const result = await Category.find()
-            .select("_id name datePosted")
+        const result = await Category.find(match)
             .exec();
         return res.status(200).json(result);
     } catch (err) {
@@ -16,10 +19,20 @@ router.get('/', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.get('/:categoryId', validJWTNeeded, (req, res, next) => {
+router.get('/:categoryId', validJWTNeeded, (req, res) => {
     const id = req.params.categoryId;
 
-    Category.findById(id)
+    const match = {};
+
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
+
+    if(id) {
+        match._id= id;
+    }
+
+    Category.find(match)
         .exec()
         .then(doc => {
             console.log(doc);
@@ -35,11 +48,16 @@ router.get('/:categoryId', validJWTNeeded, (req, res, next) => {
         });
 });
 
-router.post('/insert', validJWTNeeded, async (req, res, next) => {
+router.post('/insert', validJWTNeeded, async (req, res) => {
+    let userId;
+    if(req.jwt?._id) {
+        userId = req.jwt._id;
+    }
     const category = new Category({
         _id: new mongoose.Types.ObjectId,
         name: req.body.name,
         datePosted: new Date(),
+        userId: userId,
     });
 
     try {
@@ -51,11 +69,21 @@ router.post('/insert', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.post('/update/:categoryId', validJWTNeeded, async (req, res, next) => {
-    const id = req.params.categoryId;    
+router.post('/update/:categoryId', validJWTNeeded, async (req, res) => {
+    const id = req.params.categoryId;
+
+    const match = {};
+
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
+
+    if(id) {
+        match._id= id;
+    }
 
     try {
-        const result = await Category.updateMany({ _id: id }, { $set: req.body }).exec()
+        const result = await Category.updateMany(match, { $set: req.body }).exec()
         res.status(200).json(result);
     } catch (err) {
         console.log(err);
@@ -65,14 +93,20 @@ router.post('/update/:categoryId', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.post('/delete', validJWTNeeded, async (req, res, next) => {
+router.post('/delete', validJWTNeeded, async (req, res) => {
 
     const categoryIds = req.body.categoryIds;
 
+    const match ={};
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
+    if(categoryIds.length>0) {
+        match._id = { $in: categoryIds };
+    }
+
     try {
-        const result = await Category.deleteMany({
-            _id: {$in: categoryIds}
-        }).exec();
+        const result = await Category.deleteMany(match).exec();
         res.status(200).json(result);
     } catch (err) {
         console.log(err);

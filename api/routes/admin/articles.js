@@ -4,9 +4,13 @@ const mongoose = require('mongoose');
 const Article = require('../../models/article');
 const { validJWTNeeded } = require("../../helpers/auth.helpers");
 
-router.get('/', validJWTNeeded, (req, res, next) => {
+router.get('/', validJWTNeeded, (req, res) => {
     const match = {};
     const sort = {};
+
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
 
     if (req.query.published) {
         match.published = req.query.published;
@@ -41,10 +45,19 @@ router.get('/', validJWTNeeded, (req, res, next) => {
         });
 });
 
-router.get('/:articleId', validJWTNeeded, (req, res, next) => {
+router.get('/:articleId', validJWTNeeded, (req, res) => {
     const id = req.params.articleId;
+    const match = {};
 
-    Article.findById(id)
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
+
+    if(id) {
+        match._id=id;
+    }
+
+    Article.find(match)
         .populate('categoryIds')
         .exec()
         .then(doc => {
@@ -61,7 +74,11 @@ router.get('/:articleId', validJWTNeeded, (req, res, next) => {
         });
 });
 
-router.post('/insert', validJWTNeeded, (req, res, next) => {
+router.post('/insert', validJWTNeeded, (req, res) => {
+    let userId;
+    if(req.jwt?._id) {
+        userId = req.jwt._id;
+    }
     const article = new Article({
         _id: new mongoose.Types.ObjectId,
         title: req.body.title,
@@ -69,7 +86,7 @@ router.post('/insert', validJWTNeeded, (req, res, next) => {
         datePosted: new Date(),
         published: req.body.published,
         categoryIds: req.body.categoryIds,
-        userId: req.body.userId
+        userId: userId
     });
 
     article.save()
@@ -84,11 +101,20 @@ router.post('/insert', validJWTNeeded, (req, res, next) => {
         });
 });
 
-router.post('/update/:articleId', validJWTNeeded, async (req, res, next) => {
+router.post('/update/:articleId', validJWTNeeded, async (req, res) => {
     const id = req.params.articleId;
+    const match = {};
+
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
+
+    if(id) {
+        match._id= id;
+    }
 
     try {
-        const result = await Article.updateOne({ _id: id }, { $set: req.body }).exec()
+        const result = await Article.updateOne(match, { $set: req.body }).exec()
         res.status(200).json(result);
     } catch (err) {
         console.log(err);
@@ -98,14 +124,20 @@ router.post('/update/:articleId', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.post('/delete', validJWTNeeded, async (req, res, next) => {
+router.post('/delete', validJWTNeeded, async (req, res) => {
 
     const articleIds = req.body.articleIds;
 
+    const match ={};
+    if(req.jwt?._id) {
+        match.userId = req.jwt?._id;
+    }
+    if(articleIds.length>0) {
+        match._id = { $in: articleIds };
+    }
+
     try {
-        const result = await Article.deleteMany({
-            _id: { $in: articleIds }
-        }).exec();
+        const result = await Article.deleteMany(match).exec();
         res.status(200).json(result);
     } catch (err) {
         console.log(err);

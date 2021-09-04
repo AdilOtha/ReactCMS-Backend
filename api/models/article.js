@@ -10,6 +10,7 @@ const articleSchema = new mongoose.Schema({
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     likes: [{type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
     noOfLikes: {type: Number, default: 0},
+    noOfComments: {type: Number, default: 0},
 });
 
 module.exports = mongoose.model('Article', articleSchema);

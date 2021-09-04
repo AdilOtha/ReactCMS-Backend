@@ -5,10 +5,10 @@ const Menu = require('../../models/menu');
 const MenuItem = require('../../models/menuItem');
 const { validJWTNeeded } = require("../../helpers/auth.helpers");
 
-router.get('/', validJWTNeeded, async (req, res, next) => {
+router.get('/', validJWTNeeded, async (req, res) => {
     try {
         const result = await Menu.find()
-            .select("_id name datePosted")
+            .select("-userId")
             .exec();
         return res.status(200).json(result);
     } catch (err) {
@@ -17,8 +17,8 @@ router.get('/', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.get('/main-menu/:mainMenuId', validJWTNeeded, async (req, res, next) => {
-    const id = req.params.mainMenuId;
+router.get('/main-menu/:mainMenuId', validJWTNeeded, async (req, res) => {
+    const id = req.params.mainMenuId;    
 
     try {
         const result = await MenuItem.find({ menuIds: id })
@@ -33,7 +33,7 @@ router.get('/main-menu/:mainMenuId', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.get('/:menuId', validJWTNeeded, (req, res, next) => {
+router.get('/:menuId', validJWTNeeded, (req, res) => {
     const id = req.params.menuId;
 
     Menu.findById(id)
@@ -52,7 +52,7 @@ router.get('/:menuId', validJWTNeeded, (req, res, next) => {
         });
 });
 
-router.post('/insert', validJWTNeeded, async (req, res, next) => {
+router.post('/insert', validJWTNeeded, async (req, res) => {
     const menu = new Menu({
         _id: new mongoose.Types.ObjectId,
         name: req.body.name,
@@ -70,7 +70,7 @@ router.post('/insert', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.post('/update/:menuId', validJWTNeeded, async (req, res, next) => {
+router.post('/update/:menuId', validJWTNeeded, async (req, res) => {
     const id = req.params.menuId;
 
     try {
@@ -84,7 +84,7 @@ router.post('/update/:menuId', validJWTNeeded, async (req, res, next) => {
     }
 });
 
-router.post('/delete', validJWTNeeded, async (req, res, next) => {
+router.post('/delete', validJWTNeeded, async (req, res) => {
 
     try {
         const result = await Menu.deleteMany({
