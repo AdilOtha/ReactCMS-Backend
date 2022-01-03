@@ -55,13 +55,17 @@ router.post('/', validJWTNeeded, async (req, res) => {
         const result = await MainMenu.find().exec();
         console.log(result);
 
+        let userId;
+        if(req.jwt?._id){
+            userId=req.jwt._id;
+        }
+
         if (result.length === 0) {
             const mainMenu = new MainMenu({
                 _id: new mongoose.Types.ObjectId,
-                menuId: req.body.menuId
+                menuId: req.body.menuId,
+                userId
             });
-
-            console.log(mainMenu);
 
             try {
                 const result2 = await mainMenu.save();

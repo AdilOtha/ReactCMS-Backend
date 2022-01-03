@@ -18,7 +18,7 @@ router.get('/', validJWTNeeded, async (req, res) => {
 });
 
 router.get('/main-menu/:mainMenuId', validJWTNeeded, async (req, res) => {
-    const id = req.params.mainMenuId;    
+    const id = req.params.mainMenuId;
 
     try {
         const result = await MenuItem.find({ menuIds: id })
@@ -37,6 +37,7 @@ router.get('/:menuId', validJWTNeeded, (req, res) => {
     const id = req.params.menuId;
 
     Menu.findById(id)
+        .populate('customSelection.articles customSelection.categories')
         .exec()
         .then(doc => {
             console.log(doc);

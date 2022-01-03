@@ -1,3 +1,4 @@
+require('dotenv').config()
 const express = require('express');
 const logger = require('morgan');
 const mongoose = require('mongoose');
@@ -5,7 +6,7 @@ const cors = require('cors');
 
 const app = express();
 
-mongoose.connect("mongodb+srv://adilotha:XewPadtj2llrVEsY@node-rest-shop.yxg2l.mongodb.net/demo?retryWrites=true&w=majority",
+mongoose.connect(`mongodb+srv://adilotha:${process.env.MONGO_DB}@node-rest-shop.yxg2l.mongodb.net/demo?retryWrites=true&w=majority`,
     {
         useNewUrlParser: true,
         useUnifiedTopology: true
@@ -24,6 +25,7 @@ const categoryRoutes = require('./api/routes/admin/categories');
 const menuRoutes = require('./api/routes/admin/menus');
 const menuItemRoutes = require('./api/routes/admin/menuItems');
 const mainMenuRoutes = require('./api/routes/admin/mainMenu');
+const sideMenuRoutes = require('./api/routes/admin/sideMenu');
 const authRoutes = require('./api/routes/admin/auth');
 
 const articleRoutesSite = require('./api/routes/site-readonly/articles');
@@ -40,6 +42,7 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/menus', menuRoutes);
 app.use('/api/menu-items', menuItemRoutes);
 app.use('/api/main-menu', mainMenuRoutes);
+app.use('/api/side-menu',sideMenuRoutes);
 
 app.use('/api/site/articles', articleRoutesSite);
 app.use('/api/site/categories', categoryRoutesSite);
