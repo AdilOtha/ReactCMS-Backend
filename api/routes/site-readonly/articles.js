@@ -35,6 +35,7 @@ router.get('/', validJWTNeededForSite, (req, res) => {
         })
         .populate('userId')
         .populate("categoryIds")
+        .populate('likes')
         .exec()
         .then(async (docs) => {            
             try {
